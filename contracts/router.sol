@@ -38,7 +38,7 @@ contract StakingRouter is Ownable{
     address public atariAddress;
 
     address[] public games;
-    mapping(address => uint) gameIds;
+    mapping(address => uint) public gameIds;
 
     constructor(address _admin, address _atariAddress) public {
         admin = _admin;
@@ -79,11 +79,18 @@ contract StakingRouter is Ownable{
         emit GameLose(gameId, amount);
     }
 
-    function withdraw(address to, uint amount) external onlyAdmin{
+    function withdraw(address to, uint amount) public onlyAdmin{
         Treasury _treasury = Treasury(treasury);
         _treasury.withdraw(to, amount);
     }
 
+    function batchWithdraw(address[] memory tos, uint[] memory amounts) external onlyAdmin{
+        uint length = tos.length;
+        require(amounts.length == length,"Request parameter not valid");
+        for (uint i = 0; i < length; i++){
+            withdraw(tos[i],amounts[i]);
+        }
+    }
     /* ------------- ownable ------------- */
 
     function changeAdmin(address newAdmin) external {

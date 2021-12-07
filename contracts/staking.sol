@@ -70,13 +70,15 @@ contract StakingPool is Context, ERC20, Ownable{
         
         //fee count
         uint feeAmount = amount * gameInfo.feeRate/1000000;
+        
+        uint256 mintAmount = 0;
+        
+        if(_totalSupply == 0) mintAmount = amount.sub(feeAmount);
+        else mintAmount = (amount.sub(feeAmount)) * _totalSupply / AtariToken.balanceOf(address(this));
 
         AtariToken.transferFrom(msg.sender,address(this),amount);
         AtariToken.transfer(owner(),feeAmount/2);
         AtariToken.transfer(gameInfo.gameOwner,feeAmount/2);
-        
-        uint256 mintAmount = amount * _totalSupply / AtariToken.balanceOf(address(this));
-        if(_totalSupply == 0) mintAmount = amount;
 
         _mint(_msgSender(), mintAmount);
         return true;

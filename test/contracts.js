@@ -92,12 +92,26 @@ describe("pools test", function () {
         tx = await stakingPool.stake("1000000");
         await tx.wait();
 
+        var stakingPoolAmount = await stakingPool.totalSupply();
         var poolAmount = await atariToken.balanceOf(stakingPool.address);
         var adminAmount = await atariToken.balanceOf(userWallet.address);
 
         // 1000000 * 99% , 1000000 * 0.05%
+        expect(stakingPoolAmount).to.equal(toBigNum("990000",0));
         expect(poolAmount).to.equal(toBigNum("990000",0));
         expect(adminAmount).to.equal(toBigNum("5000",0));
+
+        console.log("step 1")
+        tx = await stakingPool.stake("1000000");
+        await tx.wait();
+
+        var stakingPoolAmount = await stakingPool.totalSupply();
+        var poolAmount = await atariToken.balanceOf(stakingPool.address);
+        var adminAmount = await atariToken.balanceOf(userWallet.address);
+        // 2000000 * 99% , 2000000 * 0.05%
+        expect(stakingPoolAmount).to.equal(toBigNum("1980000",0));
+        expect(poolAmount).to.equal(toBigNum("1980000",0));
+        expect(adminAmount).to.equal(toBigNum("10000",0));
     });
     
     it("deposit test", async function () {
@@ -114,7 +128,7 @@ describe("pools test", function () {
     });
 
 });
-
+/*
 describe("game test", function () {
     it("win lose test", async function () {
         
@@ -132,7 +146,6 @@ describe("game test", function () {
         expect(poolAmount).to.equal(toBigNum("1090000",0));
     });
 });
-
 
 describe("withdraw test", function () {
     it("staking withdraw test", async function () {
@@ -169,3 +182,4 @@ describe("withdraw test", function () {
     });
 });
 
+*/

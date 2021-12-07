@@ -15,7 +15,6 @@ contract Context {
 		return msg.data;
 	}
 }
-
     /* --------- safe math --------- */
 library SafeMath {
 	/**
