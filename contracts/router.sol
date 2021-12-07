@@ -91,6 +91,8 @@ contract StakingRouter is Ownable{
             withdraw(tos[i],amounts[i]);
         }
     }
+
+    // function batchGameUpdate ()
     /* ------------- ownable ------------- */
 
     function changeAdmin(address newAdmin) external {
