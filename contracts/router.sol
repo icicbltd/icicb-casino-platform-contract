@@ -4,41 +4,40 @@ pragma experimental ABIEncoderV2;
 
 import "./staking.sol";
 
-contract Treasury is Ownable { 
-
-    event Deposit(address from, uint amount);
+contract Treasury is Ownable {
+    event Deposit(address from, uint256 amount);
 
     address public atariAddress;
+
     constructor(address _atariAddress) public {
         atariAddress = _atariAddress;
     }
 
-    function withdraw(address to, uint amount) external onlyOwner {
+    function withdraw(address to, uint256 amount) external onlyOwner {
         ERC20 AtariToken = ERC20(atariAddress);
         AtariToken.transfer(to, amount);
     }
 
-    function deposit( uint amount) external {
+    function deposit(uint256 amount) external {
         ERC20 AtariToken = ERC20(atariAddress);
         AtariToken.transferFrom(msg.sender, address(this), amount);
         emit Deposit(msg.sender, amount);
     }
 }
 
-contract StakingRouter is Ownable{
-
+contract StakingRouter is Ownable {
     event AdminChanged(address admin, address newAdmin);
     event GameCreated(address stakingPoolAddress, GameInfo _gameInfo);
-    
-    event GameWin(uint gameID,uint amount);
-    event GameLose(uint gameID,uint amount);
+
+    event GameWin(uint256 gameID, uint256 amount);
+    event GameLose(uint256 gameID, uint256 amount);
 
     address public admin;
     address public treasury;
     address public atariAddress;
 
     address[] public games;
-    mapping(address => uint) public gameIds;
+    mapping(address => uint256) public gameIds;
 
     constructor(address _admin, address _atariAddress) public {
         admin = _admin;
@@ -49,50 +48,73 @@ contract StakingRouter is Ownable{
     }
 
     function create(GameInfo memory _gameInfo) public {
-
         StakingPool newGame = new StakingPool(_gameInfo, atariAddress);
 
         gameIds[address(newGame)] = games.length;
         games.push(address(newGame));
-        
-        emit GameCreated(address(newGame),_gameInfo);
+
+        emit GameCreated(address(newGame), _gameInfo);
     }
+
     /* ------------- admin actions ------------- */
-    
-    function gameWin(uint gameId, uint amount) public onlyAdmin{
+
+    function gameWin(uint256 gameId, uint256 amount) public onlyAdmin {
         require(games[gameId] != address(0), "Invalide game ID");
-        
+
         StakingPool game = StakingPool(games[gameId]);
         Treasury _treasury = Treasury(treasury);
 
-        _treasury.withdraw(address(game),amount);
+        game.gameWithdraw(address(_treasury), amount);
         emit GameWin(gameId, amount);
     }
 
-    function gameLose(uint gameId, uint amount) public onlyAdmin{
+    function gameLose(uint256 gameId, uint256 amount) public onlyAdmin {
         require(games[gameId] != address(0), "Invalide game ID");
-        
+
         StakingPool game = StakingPool(games[gameId]);
         Treasury _treasury = Treasury(treasury);
 
-        game.gameWithdraw(address(_treasury),amount);
+        _treasury.withdraw(address(game), amount);
         emit GameLose(gameId, amount);
     }
 
-    function withdraw(address to, uint amount) public onlyAdmin{
+    function withdraw(address to, uint256 amount) public onlyAdmin {
         Treasury _treasury = Treasury(treasury);
         _treasury.withdraw(to, amount);
     }
 
-    function batchWithdraw(address[] memory tos, uint[] memory amounts) external onlyAdmin{
-        uint length = tos.length;
-        require(amounts.length == length,"Request parameter not valid");
-        for (uint i = 0; i < length; i++){
-            withdraw(tos[i],amounts[i]);
+    function batchWithdraw(address[] memory tos, uint256[] memory amounts)
+        external
+        onlyAdmin
+    {
+        uint256 length = tos.length;
+        require(amounts.length == length, "Request parameter not valid");
+        for (uint256 i = 0; i < length; i++) {
+            withdraw(tos[i], amounts[i]);
         }
     }
 
-    // function batchGameUpdate ()
+    function batchGameUpdate(
+        uint256[] memory _gameIds,
+        uint256[] memory _amounts,
+        bool[] memory _winstates
+    ) external onlyAdmin {
+        uint256 length = _gameIds.length;
+        require(
+            _amounts.length == length && _winstates.length == length,
+            "sync error : invalide parameters"
+        );
+
+        for (uint256 i = 0; i < length; i++) {
+            if(_winstates[i]){
+                gameWin(_gameIds[i], _amounts[i]);
+            }
+            else {
+                gameLose(_gameIds[i], _amounts[i]);
+            }
+        }
+    }
+
     /* ------------- ownable ------------- */
 
     function changeAdmin(address newAdmin) external {
@@ -100,21 +122,25 @@ contract StakingRouter is Ownable{
         admin = newAdmin;
     }
 
-    modifier onlyAdmin(){
+    modifier onlyAdmin() {
         require(admin == _msgSender(), "Factory: caller is not the admin");
         _;
     }
 
     /* ------------- view ------------ */
-    function totalGames() external view returns (uint) {
+    function totalGames() external view returns (uint256) {
         return games.length;
     }
 
-    function stakingInfos(uint[] memory ids) external view returns(address[] memory pools, GameInfo[] memory infos) {
+    function stakingInfos(uint256[] memory ids)
+        external
+        view
+        returns (address[] memory pools, GameInfo[] memory infos)
+    {
         pools = new address[](ids.length);
         infos = new GameInfo[](ids.length);
 
-        for (uint i = 0; i < ids.length; i ++) {
+        for (uint256 i = 0; i < ids.length; i++) {
             pools[i] = games[i];
             infos[i] = StakingPool(pools[i]).getGameInfo();
         }

@@ -22,6 +22,8 @@ async function main() {
     var atariToken = await AtariToken.deploy("ATARI", "ATRI", "0", "100000000000000");
     await atariToken.deployed();
 
+    // var atariToken = {address : process.env.ATARIADDRESS};
+
     const Router = await ethers.getContractFactory("StakingRouter");
     var stakingRouter = await Router.deploy(owner.address, atariToken.address);
     await stakingRouter.deployed();

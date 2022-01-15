@@ -128,16 +128,16 @@ describe("pools test", function () {
     });
 
 });
-/*
+
 describe("game test", function () {
     it("win lose test", async function () {
         
         var stakingPool = stakingPools[0];
         
-        var tx = await stakingRouter.gameWin(0,"500000");
+        var tx = await stakingRouter.gameWin(stakingPool,"500000");
         await tx.wait();
 
-        tx = await stakingRouter.gameLose(0,"400000");
+        tx = await stakingRouter.gameLose(stakingPool,"400000");
         await tx.wait();
 
         var poolAmount = await atariToken.balanceOf(stakingPool.address);
@@ -146,6 +146,8 @@ describe("game test", function () {
         expect(poolAmount).to.equal(toBigNum("1090000",0));
     });
 });
+
+/*
 
 describe("withdraw test", function () {
     it("staking withdraw test", async function () {

@@ -50,7 +50,7 @@
     "deploy_local": "npx hardhat run --network localhost scripts/deploy.js",
     "deploy_icicb": "npx hardhat run --network icicb scripts/deploy.js",
     "deploy_icicb_test": "npx hardhat run --network icicbtest scripts/deploy.js",
-    "deploy": "npx hardhat run --network bsc scripts/deploy.js"
+    "deploy": "npx hardhat run --network fantom scripts/deploy.js"
   },
   "eslintConfig": {
     "extends": [
